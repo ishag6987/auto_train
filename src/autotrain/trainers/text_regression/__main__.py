@@ -13,7 +13,12 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+import os
+import habana_frameworks.torch.hpu.graphs as htgraphs
+os.environ['PT_HPU_ENABLE_GENERIC_STREAM'] = '1'
+os.environ['PT_HPU_ENABLE_REFINE_DYNAMIC_SHAPES'] = '0'
 from transformers.trainer_callback import PrinterCallback
+import habana_frameworks.torch as ht
 import habana_frameworks.torch.hpu as hthpu
 #from autotrain import logger
 from autotrain.trainers.common import (
@@ -62,6 +67,8 @@ from transformers.utils.versions import require_version
 
 from optimum.habana import GaudiConfig, GaudiTrainer, GaudiTrainingArguments
 from optimum.habana.utils import set_seed
+from optimum.habana.transformers.modeling_utils import adapt_transformers_to_gaudi
+
 
 task_to_keys = {
     "cola": ("sentence", None),
@@ -319,7 +326,7 @@ def train(config):
                     split=data_args.valid_split,
                     token=model_args.token,
                 )
-
+    
     model_config = AutoConfig.from_pretrained(
         model_args.model_name_or_path,
         num_labels=1,
@@ -348,7 +355,9 @@ def train(config):
             token=model_args.token,
             ignore_mismatched_sizes=True,
         )
+    
     model = model.to(device)
+    #model = htgraphs.wrap_in_hpu_graph(model)
     tokenizer = AutoTokenizer.from_pretrained(model_args.model_name_or_path, token=model_args.token, trust_remote_code=ALLOW_REMOTE_CODE)
     train_data = TextRegressionDataset(data=train_data, tokenizer=tokenizer, config=data_args)
     if data_args.valid_split is not None:
@@ -393,7 +402,7 @@ def train(config):
     #     callbacks=callbacks_to_use,
     #     compute_metrics=utils.single_column_regression_metrics,
     # )
-
+    
     gaudi_config = GaudiConfig.from_pretrained(
         "Habana/bert-large-uncased-whole-word-masking",
         cache_dir=None,
@@ -401,13 +410,15 @@ def train(config):
         token=None,
     )
 
+    compute_metrics=utils.single_column_regression_metrics
+
     trainer = GaudiTrainer(
         model=model,
         gaudi_config=gaudi_config,
         args=gaudi_training_args,
         train_dataset=train_data,
         eval_dataset=valid_data,
-        #compute_metrics=compute_metrics,
+        compute_metrics=compute_metrics,
         tokenizer=tokenizer,
         #data_collator=data_collator,
     )
@@ -424,24 +435,25 @@ def train(config):
     trainer.save_model(project_name)
     tokenizer.save_pretrained(project_name)
 
-    model_card = utils.create_model_card(model_args, trainer)
-
+    model_card = utils.create_model_card(data_args, trainer, model_args)
+    project_name = "training"
     # save model card to output directory as README.md
-    with open(f"{config.project_name}/README.md", "w") as f:
+    with open(f"README.md", "w") as f:
         f.write(model_card)
 
-    if config.push_to_hub:
+    push_to_hub = False
+    if push_to_hub:
         if PartialState().process_index == 0:
-            remove_autotrain_data(config)
-            save_training_params(config)
-            logger.info("Pushing model to hub...")
-            api = HfApi(token=config.token)
+            remove_autotrain_data(model_args)
+            save_training_params(model_args)
+            #logger.info("Pushing model to hub...")
+            api = HfApi(token=model_args.token)
             api.create_repo(
-                repo_id=f"{config.username}/{config.project_name}", repo_type="model", private=True, exist_ok=True
+                repo_id=f"{data_args.username}/{project_name}", repo_type="model", private=True, exist_ok=True
             )
             api.upload_folder(
-                folder_path=config.project_name,
-                repo_id=f"{config.username}/{config.project_name}",
+                folder_path=project_name,
+                repo_id=f"{data_args.username}/{project_name}",
                 repo_type="model",
             )
 
