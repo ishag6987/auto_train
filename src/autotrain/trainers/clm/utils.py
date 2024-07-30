@@ -331,7 +331,8 @@ def post_training_steps(config, trainer):
 
 
 def process_input_data(config):
-    if config.data_path == f"{config.project_name}/autotrain-data":
+    project_name = "trial"
+    if config.data_path == f"{project_name}/autotrain-data":
         logger.info("loading dataset from disk")
         train_data = load_from_disk(config.data_path)[config.train_split]
     else:

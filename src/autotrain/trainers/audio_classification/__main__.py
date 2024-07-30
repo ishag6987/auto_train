@@ -234,7 +234,7 @@ def train(training_config):
         """Apply train_transforms across a batch."""
         subsampled_wavs = []
 
-        print("batch", batch)
+        #print("batch", batch)
         for audio in batch[data_args.audio_column_name]:
             wav = random_subsample(
                 audio["array"], max_length=data_args.max_length_seconds, sample_rate=feature_extractor.sampling_rate
@@ -275,15 +275,15 @@ def train(training_config):
         label2id[label] = str(i)
         id2label[str(i)] = label
 
-    # Load the accuracy metric from the datasets package
-    #metric = evaluate.load("accuracy", cache_dir=model_args.cache_dir)
+    #Load the accuracy metric from the datasets package
+    metric = evaluate.load("accuracy", cache_dir=model_args.cache_dir)
 
-    # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with
-    # `predictions` and `label_ids` fields) and has to return a dictionary string to float.
-    # def compute_metrics(eval_pred):
-    #     """Computes accuracy on a batch of predictions"""
-    #     predictions = np.argmax(eval_pred.predictions, axis=1)
-    #     return metric.compute(predictions=predictions, references=eval_pred.label_ids)
+    #Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with
+    #`predictions` and `label_ids` fields) and has to return a dictionary string to float.
+    def compute_metrics(eval_pred):
+        """Computes accuracy on a batch of predictions"""
+        predictions = np.argmax(eval_pred.predictions, axis=1)
+        return metric.compute(predictions=predictions, references=eval_pred.label_ids)
 
     config = AutoConfig.from_pretrained(
         model_args.config_name or model_args.model_name_or_path,
@@ -319,13 +319,13 @@ def train(training_config):
         # Set the training transforms
         raw_datasets["train"].set_transform(train_transforms, output_all_columns=False)
 
-    # if training_args.do_eval:
-    #     if data_args.max_eval_samples is not None:
-    #         raw_datasets["eval"] = (
-    #             raw_datasets["eval"].shuffle(seed=training_args.seed).select(range(data_args.max_eval_samples))
-    #         )
-    #     # Set the validation transforms
-    #     raw_datasets["eval"].set_transform(val_transforms, output_all_columns=False)
+    if training_args.do_eval:
+        if data_args.max_eval_samples is not None:
+            raw_datasets["eval"] = (
+                raw_datasets["eval"].shuffle(seed=training_args.seed).select(range(data_args.max_eval_samples))
+            )
+        # Set the validation transforms
+        raw_datasets["eval"].set_transform(val_transforms, output_all_columns=False)
 
     # Initialize our trainer
     trainer = GaudiTrainer(
@@ -333,8 +333,8 @@ def train(training_config):
         gaudi_config=gaudi_config,
         args=training_args,
         train_dataset=raw_datasets["train"] if training_args.do_train else None,
-        #eval_dataset=raw_datasets["eval"] if training_args.do_eval else None,
-        #compute_metrics=compute_metrics,
+        eval_dataset=raw_datasets["eval"] if training_args.do_eval else None,
+        compute_metrics=compute_metrics,
         tokenizer=feature_extractor,
     )
 
@@ -345,18 +345,17 @@ def train(training_config):
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
-        print("checkpoint", checkpoint)
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         trainer.save_model()
         trainer.log_metrics("train", train_result.metrics)
         trainer.save_metrics("train", train_result.metrics)
         trainer.save_state()
 
-    # # Evaluation
-    # if training_args.do_eval:
-    #     metrics = trainer.evaluate()
-    #     #trainer.log_metrics("eval", metrics)
-    #     trainer.save_metrics("eval", metrics)
+    # Evaluation
+    if training_args.do_eval:
+        metrics = trainer.evaluate()
+        #trainer.log_metrics("eval", metrics)
+        trainer.save_metrics("eval", metrics)
 
     # Write model card and (optionally) push to hub
     kwargs = {
