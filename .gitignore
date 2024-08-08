@@ -142,3 +142,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# run logs
+src/autotrain/trainers/*/runs/
+src/autotrain/trainers/*/checkpoint-*/
+src/autotrain/trainers/*/hl-smi_log.txt
