@@ -47,6 +47,7 @@
     "noise_offset": 0,
     "timestep_bias_strategy": null,
     "timestep_bias_portion": 0.25,
-    "prediction_type": null
+    "prediction_type": null,
+    "snr_gamma": null
 }
   

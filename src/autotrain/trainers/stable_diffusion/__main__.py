@@ -1323,7 +1323,7 @@ def main(args):
                 lr_scheduler.step()
                 optimizer.zero_grad(set_to_none=True)
                 htcore.mark_step()
-                hb_profiler.step()
+                #hb_profiler.step()
 
             # Checks if the accelerator has performed an optimization step behind the scenes
             if accelerator.sync_gradients:
@@ -1381,13 +1381,13 @@ def main(args):
             if global_step >= args["max_train_steps"]:
                 break
 
-        hb_profiler.stop()
+        #hb_profiler.stop()
         if accelerator.is_main_process:
             if args["validation_prompt"] is not None and (epoch + 1) % args["validation_epochs"] == 0:
-                logger.info(
-                    f"""Running validation... \n Generating {args["num_validation_images"]} images with prompt:"""
-                    f""" {args["validation_prompt"]}."""
-                )
+                # logger.info(
+                #     f"""Running validation... \n Generating {args["num_validation_images"]} images with prompt:"""
+                #     f""" {args["validation_prompt"]}."""
+                # )
                 if args["use_ema"]:
                     # Store the UNet parameters temporarily and load the EMA parameters to perform inference.
                     ema_unet.store(unet.parameters())
