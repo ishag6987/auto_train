@@ -48,6 +48,8 @@
     "timestep_bias_strategy": null,
     "timestep_bias_portion": 0.25,
     "prediction_type": null,
-    "snr_gamma": null
+    "snr_gamma": null,
+    "num_validation_images": 3
+}
 }
   
