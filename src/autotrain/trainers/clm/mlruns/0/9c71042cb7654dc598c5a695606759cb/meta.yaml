@@ -1,0 +1,15 @@
+artifact_uri: file:///root/AutoTrain_On_Gaudi/src/autotrain/trainers/clm/mlruns/0/9c71042cb7654dc598c5a695606759cb/artifacts
+end_time: 1725702703112
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: 9c71042cb7654dc598c5a695606759cb
+run_name: capable-auk-759
+run_uuid: 9c71042cb7654dc598c5a695606759cb
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1725702703101
+status: 3
+tags: []
+user_id: root

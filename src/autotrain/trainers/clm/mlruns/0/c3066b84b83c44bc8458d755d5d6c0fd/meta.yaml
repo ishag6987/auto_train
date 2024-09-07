@@ -1,0 +1,15 @@
+artifact_uri: file:///root/AutoTrain_On_Gaudi/src/autotrain/trainers/clm/mlruns/0/c3066b84b83c44bc8458d755d5d6c0fd/artifacts
+end_time: 1725702674406
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: c3066b84b83c44bc8458d755d5d6c0fd
+run_name: ./
+run_uuid: c3066b84b83c44bc8458d755d5d6c0fd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1725701457172
+status: 3
+tags: []
+user_id: root

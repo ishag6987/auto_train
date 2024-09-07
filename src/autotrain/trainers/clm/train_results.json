@@ -1,0 +1,11 @@
+{
+    "epoch": 1.0,
+    "max_memory_allocated (GB)": 94.56,
+    "memory_allocated (GB)": 27.25,
+    "total_flos": 3.0996169334194176e+17,
+    "total_memory_available (GB)": 94.62,
+    "train_loss": 1.8655573541285446,
+    "train_runtime": 1217.2705,
+    "train_samples_per_second": 11.715,
+    "train_steps_per_second": 11.715
+}
