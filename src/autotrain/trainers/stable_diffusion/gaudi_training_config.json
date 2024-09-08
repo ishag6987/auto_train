@@ -21,7 +21,7 @@
     "use_hpu_graphs_for_training": true,
     "use_hpu_graphs_for_inference": true,
     "validation_prompt": "a robotic cat with wings",
-    "validation_epochs": 48,
+    "validation_epochs": 1,
     "checkpointing_steps": 2500,
     "logging_step": 10,
     "adjust_throughput": true,
@@ -51,5 +51,5 @@
     "snr_gamma": null,
     "num_validation_images": 3
 }
-}
+
   
